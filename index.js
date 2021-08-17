@@ -2,12 +2,14 @@ const grid = document.querySelector('.grid')
 const scoreDisplay = document.getElementById("score")
 const button = document.getElementById("reset-btn")
 
-let currentSnake = [2,1,0]
 let squares = []
+let currentSnake = [2,1,0]
 let direction = 1
-
-let score = 0
 let appleIndex = 0
+let score = 0
+let intervalTime = 1000
+let speed = 0.9
+let timerId = 0
 
 function createGrid() {
     for(let i=0; i<100; i++) {
@@ -19,9 +21,26 @@ function createGrid() {
 }
 
 createGrid()
-generateApple()
 
 currentSnake.forEach(index => squares[index].classList.add('snake'))
+
+function startGame() {
+    //remove the snake
+    currentSnake.forEach(index => squares[index].classList.remove('snake'))
+    //remove the apple
+    squares[appleIndex].classList.remove('apple')
+    clearInterval(timerId)
+    currentSnake = [2,1,0]
+    score = 0
+    //re add new score to browser
+    scoreDisplay.textContent = "Score: " + score
+    direction = 1
+    intervalTime = 1000
+    generateApple()
+    //readd the class of snake to our new currentSnake
+    currentSnake.forEach(index => squares[index].classList.add('snake'))
+    timerId = setInterval(move, intervalTime)
+}
 
 function move() {
     if((currentSnake[0] % 10 === 0 && direction === -1) ||
@@ -42,13 +61,14 @@ function move() {
         score += 10
         scoreDisplay.textContent = "Score: " + score
         generateApple()
+        clearInterval(timerId)
+        intervalTime = intervalTime * speed
+        timerId = setInterval(move, intervalTime)
     }
 
     currentSnake.unshift(currentSnake[0] + direction)
     squares[currentSnake[0]].classList.add('snake')
 }
-
-let timerId = setInterval(move, 300)
 
 function control(e) {
     if(e.key === 'ArrowDown' && direction != -10) {
@@ -64,9 +84,6 @@ function control(e) {
         direction = 1
     }
 }
-/*steps to finish this game:
-1. function for restarting game
-*/
 
 function generateApple() {
     do {
@@ -76,3 +93,4 @@ function generateApple() {
 } 
 
 document.addEventListener("keyup", control)
+button.addEventListener('click', startGame)
